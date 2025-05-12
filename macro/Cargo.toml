@@ -19,12 +19,13 @@ proc-macro2 = "1"
 quote = "1"
 regex = "1.11.1"
 syn = { version = "2", features = ["full"] }
-tblgen = { version = "0.6.0", features = [
+tblgen = { git = "https://github.com/marcantoinem/tblgen-rs", branch = "bundled", features = [
   "llvm20-0",
+  "bundled"
 ], default-features = false }
 unindent = "0.2.4"
 
 [dev-dependencies]
 melior = { path = "../melior", features = ["ods-dialects"] }
-mlir-sys = "0.5.0"
+mlir-sys = { git = "https://github.com/marcantoinem/mlir-sys", branch = "bundled", features = ["bundled"] }
 pretty_assertions = "1.4.1"

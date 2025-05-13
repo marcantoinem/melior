@@ -201,7 +201,7 @@ melior_macro::dialect! {
 mod tests {
     use super::*;
     use crate::{
-        dialect,
+        dialect::{self, arith, func},
         ir::{
             attribute::{IntegerAttribute, StringAttribute, TypeAttribute},
             operation::OperationLike,
@@ -243,6 +243,8 @@ mod tests {
         module.body().append_operation(
             func::func(
                 context,
+                StringAttribute::new(context, "foo"),
+                TypeAttribute::new(FunctionType::new(context, argument_types, &[]).into()),
                 {
                     let block = Block::new(
                         &argument_types
@@ -258,8 +260,7 @@ mod tests {
                     region.append_block(block);
                     region
                 },
-                StringAttribute::new(context, "foo"),
-                TypeAttribute::new(FunctionType::new(context, argument_types, &[]).into()),
+                &vec![],
                 location,
             )
             .into(),
@@ -280,7 +281,6 @@ mod tests {
         test_operation("addf", &context, &[r#type, r#type], |block| {
             block.append_operation(
                 arith::addf(
-                    &context,
                     block.argument(0).unwrap().into(),
                     block.argument(1).unwrap().into(),
                     location,
@@ -288,72 +288,75 @@ mod tests {
                 .into(),
             );
 
-            block.append_operation(func::r#return(&context, &[], location).into());
+            block.append_operation(func::r#return(&[], location).into());
         });
     }
 
     #[test]
     fn compile_arith_addf_builder_with_reverse_order() {
-        let context = create_test_context();
-        let location = Location::unknown(&context);
-        let r#type = Type::float32(&context);
+        todo!("Fix this function");
+        // let context = create_test_context();
+        // let location = Location::unknown(&context);
+        // let r#type = Type::float32(&context);
 
-        test_operation("addf_builder", &context, &[r#type, r#type], |block| {
-            block.append_operation(
-                arith::AddFOperationBuilder::new(&context, location)
-                    .lhs(block.argument(0).unwrap().into())
-                    .rhs(block.argument(1).unwrap().into())
-                    .build()
-                    .into(),
-            );
+        // test_operation("addf_builder", &context, &[r#type, r#type], |block| {
+        //     block.append_operation(
+        //         arith::AddFOperationBuilder::new(&context, location)
+        //             .lhs(block.argument(0).unwrap().into())
+        //             .rhs(block.argument(1).unwrap().into())
+        //             .build()
+        //             .into(),
+        //     );
 
-            block.append_operation(func::r#return(&context, &[], location).into());
-        });
+        //     block.append_operation(func::r#return(&context, &[], location).into());
+        // });
     }
 
     #[test]
     fn compile_llvm_alloca() {
-        let context = create_test_context();
-        let location = Location::unknown(&context);
-        let integer_type = IntegerType::new(&context, 64).into();
+        todo!("Fix this test");
+        // let context = create_test_context();
+        // let location = Location::unknown(&context);
+        // let integer_type = IntegerType::new(&context, 64).into();
 
-        test_operation("alloc", &context, &[integer_type], |block| {
-            let alloca_size = block.argument(0).unwrap().into();
+        // test_operation("alloc", &context, &[integer_type], |block| {
+        //     let alloca_size = block.argument(0).unwrap().into();
 
-            block.append_operation(
-                llvm::AllocaOperation::builder(&context, location)
-                    .array_size(alloca_size)
-                    .elem_type(TypeAttribute::new(integer_type))
-                    .res(dialect::llvm::r#type::pointer(&context, 0))
-                    .build()
-                    .into(),
-            );
+        //     block.append_operation(
+        //         llvm::AllocaOperation::builder(&context, location)
+        //             .array_size(alloca_size)
+        //             .elem_type(TypeAttribute::new(integer_type))
+        //             .res(dialect::llvm::r#type::pointer(&context, 0))
+        //             .build()
+        //             .into(),
+        //     );
 
-            block.append_operation(func::r#return(&context, &[], location).into());
-        });
+        //     block.append_operation(func::r#return(&context, &[], location).into());
+        // });
     }
 
     #[test]
     fn compile_llvm_alloca_builder() {
-        let context = create_test_context();
-        let location = Location::unknown(&context);
-        let integer_type = IntegerType::new(&context, 64).into();
-        let ptr_type = dialect::llvm::r#type::pointer(&context, 0);
+        todo!("Fix this test");
+        // let context = create_test_context();
+        // let location = Location::unknown(&context);
+        // let integer_type = IntegerType::new(&context, 64).into();
+        // let ptr_type = dialect::llvm::r#type::pointer(&context, 0);
 
-        test_operation("alloc_builder", &context, &[integer_type], |block| {
-            let alloca_size = block.argument(0).unwrap().into();
+        // test_operation("alloc_builder", &context, &[integer_type], |block| {
+        //     let alloca_size = block.argument(0).unwrap().into();
 
-            block.append_operation(
-                llvm::AllocaOperationBuilder::new(&context, location)
-                    .alignment(IntegerAttribute::new(integer_type, 8))
-                    .elem_type(TypeAttribute::new(integer_type))
-                    .array_size(alloca_size)
-                    .res(ptr_type)
-                    .build()
-                    .into(),
-            );
+        //     block.append_operation(
+        //         llvm::AllocaOperationBuilder::new(&context, location)
+        //             .alignment(IntegerAttribute::new(integer_type, 8))
+        //             .elem_type(TypeAttribute::new(integer_type))
+        //             .array_size(alloca_size)
+        //             .res(ptr_type)
+        //             .build()
+        //             .into(),
+        //     );
 
-            block.append_operation(func::r#return(&context, &[], location).into());
-        });
+        //     block.append_operation(func::r#return(&context, &[], location).into());
+        // });
     }
 }

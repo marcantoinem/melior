@@ -24,7 +24,11 @@ use std::{
 };
 use tblgen::{record::Record, record_keeper::RecordKeeper, TableGenParser};
 
+#[cfg(not(feature = "bundled"))]
 const LLVM_INCLUDE_DIRECTORY: &str = env!("LLVM_INCLUDE_DIRECTORY");
+// TODO make this work outside of Linux
+#[cfg(feature = "bundled")]
+const LLVM_INCLUDE_DIRECTORY: &str = concat!(env!("HOME"), "/.local/share/llvm/include/");
 
 pub fn generate_dialect(input: DialectInput) -> Result<TokenStream, Box<dyn std::error::Error>> {
     let mut parser = TableGenParser::new();

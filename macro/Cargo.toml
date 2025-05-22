@@ -25,6 +25,10 @@ tblgen = { git = "https://github.com/marcantoinem/tblgen-rs", branch = "bundled"
 ], default-features = false }
 unindent = "0.2.4"
 
+[features]
+default = ["bundled"]
+bundled = ["mlir-sys/bundled"]
+
 [dev-dependencies]
 melior = { path = "../melior", features = ["ods-dialects"] }
 mlir-sys = { git = "https://github.com/marcantoinem/mlir-sys", branch = "bundled", features = ["bundled"] }

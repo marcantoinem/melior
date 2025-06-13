@@ -3,8 +3,8 @@
 use crate::{
     ir::{
         attribute::{
-            DenseI32ArrayAttribute, DenseI64ArrayAttribute, IntegerAttribute, StringAttribute,
-            TypeAttribute,
+            DenseI32ArrayAttribute, DenseI64ArrayAttribute, FlatSymbolRefAttribute,
+            IntegerAttribute, StringAttribute, TypeAttribute,
         },
         operation::OperationBuilder,
         r#type::IntegerType,
@@ -246,6 +246,31 @@ pub fn call_intrinsic<'c>(
     OperationBuilder::new("llvm.call_intrinsic", location)
         .add_operands(args)
         .add_attributes(&[(Identifier::new(context, "intrin"), intrin.into())])
+        .add_results(results)
+        .build()
+        .expect("valid operation")
+}
+
+/// Creates a `llvm.call` operation.
+/// Only set var_callee_type to Some(TypeAttribute) if the function is variadic ex: printf
+pub fn call<'c>(
+    context: &'c Context,
+    callee: FlatSymbolRefAttribute<'c>,
+    var_callee_type: Option<TypeAttribute<'c>>,
+    args: &[Value<'c, '_>],
+    results: &[Type<'c>],
+    location: Location<'c>,
+) -> Operation<'c> {
+    let mut attributes = vec![(Identifier::new(context, "callee"), callee.into())];
+    if let Some(var_callee_type) = var_callee_type {
+        attributes.push((
+            Identifier::new(context, "var_callee_type"),
+            var_callee_type.into(),
+        ));
+    }
+    OperationBuilder::new("llvm.call", location)
+        .add_operands(args)
+        .add_attributes(&attributes)
         .add_results(results)
         .build()
         .expect("valid operation")

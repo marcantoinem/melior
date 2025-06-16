@@ -199,13 +199,12 @@ melior_macro::dialect! {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::{
-        dialect::{self, arith, func},
+        dialect::{arith, func},
         ir::{
-            attribute::{IntegerAttribute, StringAttribute, TypeAttribute},
+            attribute::{StringAttribute, TypeAttribute},
             operation::OperationLike,
-            r#type::{FunctionType, IntegerType},
+            r#type::FunctionType,
             Block, BlockLike, Location, Module, Region, RegionLike, Type,
         },
         pass::{self, PassManager},

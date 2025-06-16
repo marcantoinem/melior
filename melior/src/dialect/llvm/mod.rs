@@ -257,6 +257,7 @@ pub fn call<'c>(
     context: &'c Context,
     callee: FlatSymbolRefAttribute<'c>,
     var_callee_type: Option<TypeAttribute<'c>>,
+    operand_segment_sizes: &[i32],
     args: &[Value<'c, '_>],
     results: &[Type<'c>],
     location: Location<'c>,
@@ -264,7 +265,7 @@ pub fn call<'c>(
     let mut attributes = vec![(Identifier::new(context, "callee"), callee.into())];
     attributes.push((
         Identifier::new(context, "operandSegmentSizes"),
-        IntegerAttribute::new(Type::index(context), args.len() as i64).into(),
+        DenseI32ArrayAttribute::new(context, operand_segment_sizes).into(),
     ));
     if let Some(var_callee_type) = var_callee_type {
         attributes.push((

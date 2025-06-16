@@ -262,6 +262,10 @@ pub fn call<'c>(
     location: Location<'c>,
 ) -> Operation<'c> {
     let mut attributes = vec![(Identifier::new(context, "callee"), callee.into())];
+    attributes.push((
+        Identifier::new(context, "operandSegmentSizes"),
+        IntegerAttribute::new(Type::index(context), args.len() as i64).into(),
+    ));
     if let Some(var_callee_type) = var_callee_type {
         attributes.push((
             Identifier::new(context, "var_callee_type"),

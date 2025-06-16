@@ -3,7 +3,7 @@
 use crate::{
     ir::{
         attribute::{
-            DenseI32ArrayAttribute, DenseI64ArrayAttribute, FlatSymbolRefAttribute,
+            ArrayAttribute, DenseI32ArrayAttribute, DenseI64ArrayAttribute, FlatSymbolRefAttribute,
             IntegerAttribute, StringAttribute, TypeAttribute,
         },
         operation::OperationBuilder,
@@ -257,7 +257,6 @@ pub fn call<'c>(
     context: &'c Context,
     callee: FlatSymbolRefAttribute<'c>,
     var_callee_type: Option<TypeAttribute<'c>>,
-    operand_segment_sizes: &[i32],
     args: &[Value<'c, '_>],
     results: &[Type<'c>],
     location: Location<'c>,
@@ -265,7 +264,15 @@ pub fn call<'c>(
     let mut attributes = vec![(Identifier::new(context, "callee"), callee.into())];
     attributes.push((
         Identifier::new(context, "operandSegmentSizes"),
-        DenseI32ArrayAttribute::new(context, operand_segment_sizes).into(),
+        DenseI32ArrayAttribute::new(context, &[args.len() as i32, 0]).into(),
+    ));
+    attributes.push((
+        Identifier::new(context, "op_bundle_sizes"),
+        DenseI32ArrayAttribute::new(context, &[]).into(),
+    ));
+    attributes.push((
+        Identifier::new(context, "op_bundle_tags"),
+        ArrayAttribute::new(context, &[]).into(),
     ));
     if let Some(var_callee_type) = var_callee_type {
         attributes.push((
@@ -406,6 +413,7 @@ mod tests {
                 attributes::{linkage, Linkage},
                 r#type::function,
             },
+            ods::llvm::{mlir_addressof, mlir_constant, mlir_global},
         },
         ir::{
             attribute::{IntegerAttribute, StringAttribute, TypeAttribute},
@@ -929,15 +937,95 @@ mod tests {
         let mut module = Module::new(location);
         let integer_type = IntegerType::new(&context, 32).into();
 
+        let func_type = TypeAttribute::new(function(integer_type, &[pointer(&context, 0)], true));
+
         module.body().append_operation(func(
             &context,
             StringAttribute::new(&context, "printf"),
-            TypeAttribute::new(function(integer_type, &[pointer(&context, 0)], true)),
+            func_type,
             Region::new(),
             &[(
                 Identifier::new(&context, "linkage"),
                 linkage(&context, Linkage::External),
             )],
+            location,
+        ));
+
+        let str = "The number is %i\n\0";
+        let str_value = StringAttribute::new(&context, str).into();
+        let str_type = r#type::array(IntegerType::new(&context, 8).into(), str.len() as u32);
+        module.body().append_operation(
+            mlir_global(
+                &context,
+                {
+                    let region = Region::new();
+                    let block = Block::new(&[]);
+                    let constant = block
+                        .append_operation(
+                            mlir_constant(&context, str_type, str_value, location).into(),
+                        )
+                        .result(0)
+                        .unwrap()
+                        .into();
+                    block.append_operation(r#return(Some(constant), location));
+                    region.append_block(block);
+                    region
+                },
+                TypeAttribute::new(str_type),
+                StringAttribute::new(&context, "printfArgument"),
+                linkage(&context, Linkage::Internal),
+                location,
+            )
+            .into(),
+        );
+        let func_type = TypeAttribute::new(function(
+            integer_type,
+            &[pointer(&context, 0), integer_type],
+            true,
+        ));
+
+        module.body().append_operation(func(
+            &context,
+            StringAttribute::new(&context, "main"),
+            TypeAttribute::new(function(r#type::void(&context), &[], false)),
+            {
+                let region = Region::new();
+                let block = Block::new(&[]);
+
+                let forty_two = IntegerAttribute::new(integer_type, 42).into();
+                let forty_two = block
+                    .append_operation(
+                        mlir_constant(&context, integer_type, forty_two, location).into(),
+                    )
+                    .result(0)
+                    .unwrap()
+                    .into();
+                let const_str = block
+                    .append_operation(
+                        mlir_addressof(
+                            &context,
+                            r#type::pointer(&context, 0),
+                            FlatSymbolRefAttribute::new(&context, "printfArgument"),
+                            location,
+                        )
+                        .into(),
+                    )
+                    .result(0)
+                    .unwrap()
+                    .into();
+                block.append_operation(call(
+                    &context,
+                    FlatSymbolRefAttribute::new(&context, "printf"),
+                    Some(func_type),
+                    &[const_str, forty_two],
+                    &[integer_type],
+                    location,
+                ));
+                block.append_operation(r#return(None, location));
+                region.append_block(block);
+                region
+            },
+            &[],
             location,
         ));
 

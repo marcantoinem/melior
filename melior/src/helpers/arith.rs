@@ -1,16 +1,12 @@
 use super::builtin::BuiltinBlockExt;
 use crate::{
-    dialect::{
-        arith::{
-            addi, andi, cmpi, divsi, divui, extsi, extui, muli, ori, shli, shrsi, shrui, subi,
-            trunci, xori, CmpiPredicate,
-        },
-        ods,
+    dialect::arith::{
+        addi, andi, cmpi, constant, divsi, divui, extsi, extui, muli, ori, shli, shrsi, shrui,
+        subi, trunci, xori, CmpiPredicate,
     },
-    ir::{r#type::IntegerType, Attribute, Block, Location, Type, Value},
+    ir::{attribute::IntegerAttribute, r#type::IntegerType, Block, Location, Type, Value},
     Context, Error,
 };
-use core::fmt::Display;
 
 macro_rules! binary_operation_declaration {
     ($name:ident, $documentation:literal) => {
@@ -91,7 +87,7 @@ pub trait ArithBlockExt<'c>: BuiltinBlockExt<'c> {
         &self,
         context: &'c Context,
         location: Location<'c>,
-        value: impl Display,
+        value: i64,
         bits: u32,
     ) -> Result<Value<'c, '_>, Error>;
 
@@ -100,7 +96,7 @@ pub trait ArithBlockExt<'c>: BuiltinBlockExt<'c> {
         &self,
         context: &'c Context,
         location: Location<'c>,
-        value: impl Display,
+        value: i64,
         r#type: Type<'c>,
     ) -> Result<Value<'c, '_>, Error>;
 }
@@ -165,7 +161,7 @@ impl<'c> ArithBlockExt<'c> for Block<'c> {
         &self,
         context: &'c Context,
         location: Location<'c>,
-        value: impl Display,
+        value: i64,
         bits: u32,
     ) -> Result<Value<'c, '_>, Error> {
         self.const_int_from_type(
@@ -181,19 +177,13 @@ impl<'c> ArithBlockExt<'c> for Block<'c> {
         &self,
         context: &'c Context,
         location: Location<'c>,
-        value: impl Display,
+        value: i64,
         r#type: Type<'c>,
     ) -> Result<Value<'c, '_>, Error> {
-        let attribute = format!("{value} : {type}");
-
-        self.append_op_result(
-            ods::arith::constant(
-                context,
-                r#type,
-                Attribute::parse(context, &attribute).ok_or(Error::AttributeParse(attribute))?,
-                location,
-            )
-            .into(),
-        )
+        self.append_op_result(constant(
+            context,
+            IntegerAttribute::new(r#type, value).into(),
+            location,
+        ))
     }
 }

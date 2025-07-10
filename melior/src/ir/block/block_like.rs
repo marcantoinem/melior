@@ -85,9 +85,9 @@ pub trait BlockLike<'c, 'a>: Display + 'a {
     }
 
     /// Appends an operation.
-    fn append_operation(&self, operation: Operation<'c>) -> OperationRef<'c, 'a> {
+    fn append_operation(&self, operation: impl Into<Operation<'c>>) -> OperationRef<'c, 'a> {
         unsafe {
-            let operation = operation.into_raw();
+            let operation = operation.into().into_raw();
 
             mlirBlockAppendOwnedOperation(self.to_raw(), operation);
 

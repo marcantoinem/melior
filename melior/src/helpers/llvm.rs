@@ -134,16 +134,13 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         value_type: Type<'c>,
         index: usize,
     ) -> Result<Value<'c, '_>, Error> {
-        self.append_op_result(
-            ods::llvm::extractvalue(
-                context,
-                value_type,
-                container,
-                DenseI64ArrayAttribute::new(context, &[index as _]).into(),
-                location,
-            )
-            .into(),
-        )
+        self.append_op_result(ods::llvm::extractvalue(
+            context,
+            value_type,
+            container,
+            DenseI64ArrayAttribute::new(context, &[index as _]).into(),
+            location,
+        ))
     }
 
     #[inline]
@@ -155,17 +152,14 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         value: Value<'c, '_>,
         index: usize,
     ) -> Result<Value<'c, '_>, Error> {
-        self.append_op_result(
-            ods::llvm::insertvalue(
-                context,
-                container.r#type(),
-                container,
-                value,
-                DenseI64ArrayAttribute::new(context, &[index as _]).into(),
-                location,
-            )
-            .into(),
-        )
+        self.append_op_result(ods::llvm::insertvalue(
+            context,
+            container.r#type(),
+            container,
+            value,
+            DenseI64ArrayAttribute::new(context, &[index as _]).into(),
+            location,
+        ))
     }
 
     #[inline]
@@ -190,7 +184,7 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         addr: Value<'c, '_>,
         value: Value<'c, '_>,
     ) -> Result<(), Error> {
-        self.append_operation(ods::llvm::store(context, value, addr, location).into());
+        self.append_operation(ods::llvm::store(context, value, addr, location));
         Ok(())
     }
 
@@ -202,7 +196,7 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         addr: Value<'c, '_>,
         value_type: Type<'c>,
     ) -> Result<Value<'c, '_>, Error> {
-        self.append_op_result(ods::llvm::load(context, value_type, addr, location).into())
+        self.append_op_result(ods::llvm::load(context, value_type, addr, location))
     }
 
     #[inline]
@@ -214,17 +208,14 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         dst: Value<'c, '_>,
         len_bytes: Value<'c, '_>,
     ) {
-        self.append_operation(
-            ods::llvm::intr_memcpy(
-                context,
-                dst,
-                src,
-                len_bytes,
-                IntegerAttribute::new(IntegerType::new(context, 1).into(), 0),
-                location,
-            )
-            .into(),
-        );
+        self.append_operation(ods::llvm::intr_memcpy(
+            context,
+            dst,
+            src,
+            len_bytes,
+            IntegerAttribute::new(IntegerType::new(context, 1).into(), 0),
+            location,
+        ));
     }
 
     #[inline]
@@ -250,7 +241,7 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
             align as _,
         ));
 
-        self.append_op_result(operation.into())
+        self.append_op_result(operation)
     }
 
     #[inline]
@@ -319,6 +310,6 @@ impl<'c> LlvmBlockExt<'c> for Block<'c> {
         );
         operation.set_inbounds(Attribute::unit(context));
 
-        self.append_op_result(operation.into())
+        self.append_op_result(operation)
     }
 }

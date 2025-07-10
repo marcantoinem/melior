@@ -3,3 +3,4 @@ target
 .direnv
 .envrc
 Cargo.lock
+.zed

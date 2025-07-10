@@ -9,7 +9,8 @@ pub trait BuiltinBlockExt<'c> {
     fn arg(&self, index: usize) -> Result<Value<'c, '_>, Error>;
 
     /// Appends an operation and returns its first value.
-    fn append_op_result(&self, operation: Operation<'c>) -> Result<Value<'c, '_>, Error>;
+    fn append_op_result(&self, operation: impl Into<Operation<'c>>)
+        -> Result<Value<'c, '_>, Error>;
 }
 
 impl<'c> BuiltinBlockExt<'c> for Block<'c> {
@@ -19,7 +20,10 @@ impl<'c> BuiltinBlockExt<'c> for Block<'c> {
     }
 
     #[inline]
-    fn append_op_result(&self, operation: Operation<'c>) -> Result<Value<'c, '_>, Error> {
+    fn append_op_result(
+        &self,
+        operation: impl Into<Operation<'c>>,
+    ) -> Result<Value<'c, '_>, Error> {
         Ok(self.append_operation(operation).result(0)?.into())
     }
 }

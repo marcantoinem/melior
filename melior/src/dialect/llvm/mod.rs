@@ -954,30 +954,25 @@ mod tests {
         let str = "The number is %i\n\0";
         let str_value = StringAttribute::new(&context, str).into();
         let str_type = r#type::array(IntegerType::new(&context, 8).into(), str.len() as u32);
-        module.body().append_operation(
-            mlir_global(
-                &context,
-                {
-                    let region = Region::new();
-                    let block = Block::new(&[]);
-                    let constant = block
-                        .append_operation(
-                            mlir_constant(&context, str_type, str_value, location).into(),
-                        )
-                        .result(0)
-                        .unwrap()
-                        .into();
-                    block.append_operation(r#return(Some(constant), location));
-                    region.append_block(block);
-                    region
-                },
-                TypeAttribute::new(str_type),
-                StringAttribute::new(&context, "printfArgument"),
-                linkage(&context, Linkage::Internal),
-                location,
-            )
-            .into(),
-        );
+        module.body().append_operation(mlir_global(
+            &context,
+            {
+                let region = Region::new();
+                let block = Block::new(&[]);
+                let constant = block
+                    .append_operation(mlir_constant(&context, str_type, str_value, location))
+                    .result(0)
+                    .unwrap()
+                    .into();
+                block.append_operation(r#return(Some(constant), location));
+                region.append_block(block);
+                region
+            },
+            TypeAttribute::new(str_type),
+            StringAttribute::new(&context, "printfArgument"),
+            linkage(&context, Linkage::Internal),
+            location,
+        ));
         let func_type = TypeAttribute::new(function(
             integer_type,
             &[pointer(&context, 0), integer_type],
@@ -994,22 +989,17 @@ mod tests {
 
                 let forty_two = IntegerAttribute::new(integer_type, 42).into();
                 let forty_two = block
-                    .append_operation(
-                        mlir_constant(&context, integer_type, forty_two, location).into(),
-                    )
+                    .append_operation(mlir_constant(&context, integer_type, forty_two, location))
                     .result(0)
                     .unwrap()
                     .into();
                 let const_str = block
-                    .append_operation(
-                        mlir_addressof(
-                            &context,
-                            r#type::pointer(&context, 0),
-                            FlatSymbolRefAttribute::new(&context, "printfArgument"),
-                            location,
-                        )
-                        .into(),
-                    )
+                    .append_operation(mlir_addressof(
+                        &context,
+                        r#type::pointer(&context, 0),
+                        FlatSymbolRefAttribute::new(&context, "printfArgument"),
+                        location,
+                    ))
                     .result(0)
                     .unwrap()
                     .into();

@@ -10,6 +10,9 @@ pub struct ExecutionEngine {
     raw: MlirExecutionEngine,
 }
 
+unsafe impl Send for ExecutionEngine {}
+unsafe impl Sync for ExecutionEngine {}
+
 impl ExecutionEngine {
     /// Creates an execution engine.
     pub fn new(

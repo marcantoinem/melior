@@ -13,10 +13,10 @@ macro_rules! binary_operation_declaration {
         #[doc=$documentation]
         fn $name(
             &self,
-            lhs: Value<'c, '_>,
-            rhs: Value<'c, '_>,
+            lhs: Value<'c, 'c>,
+            rhs: Value<'c, 'c>,
             location: Location<'c>,
-        ) -> Result<Value<'c, '_>, Error>;
+        ) -> Result<Value<'c, 'c>, Error>;
     };
 }
 
@@ -25,10 +25,10 @@ macro_rules! binary_operation {
         #[inline]
         fn $name(
             &self,
-            lhs: Value<'c, '_>,
-            rhs: Value<'c, '_>,
+            lhs: Value<'c, 'c>,
+            rhs: Value<'c, 'c>,
             location: Location<'c>,
-        ) -> Result<Value<'c, '_>, Error> {
+        ) -> Result<Value<'c, 'c>, Error> {
             self.append_op_result($name(lhs, rhs, location))
         }
     };

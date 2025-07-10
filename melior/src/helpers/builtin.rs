@@ -10,7 +10,7 @@ pub trait BuiltinBlockExt<'c> {
 
     /// Appends an operation and returns its first value.
     fn append_op_result(&self, operation: impl Into<Operation<'c>>)
-        -> Result<Value<'c, '_>, Error>;
+        -> Result<Value<'c, 'c>, Error>;
 }
 
 impl<'c> BuiltinBlockExt<'c> for Block<'c> {
@@ -23,7 +23,7 @@ impl<'c> BuiltinBlockExt<'c> for Block<'c> {
     fn append_op_result(
         &self,
         operation: impl Into<Operation<'c>>,
-    ) -> Result<Value<'c, '_>, Error> {
+    ) -> Result<Value<'c, 'c>, Error> {
         Ok(self.append_operation(operation).result(0)?.into())
     }
 }

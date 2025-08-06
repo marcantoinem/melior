@@ -973,15 +973,15 @@ mod tests {
             linkage(&context, Linkage::Internal),
             location,
         ));
-        let func_type = TypeAttribute::new(function(
-            integer_type,
-            &[pointer(&context, 0), integer_type],
-            true,
-        ));
+        let func_type = TypeAttribute::new(function(integer_type, &[pointer(&context, 0)], true));
 
+        let attributes = &[(
+            Identifier::new(&context, "llvm.emit_c_interface"),
+            Attribute::unit(&context),
+        )];
         module.body().append_operation(func(
             &context,
-            StringAttribute::new(&context, "main"),
+            StringAttribute::new(&context, "_mlir_ciface_kernel"),
             TypeAttribute::new(function(r#type::void(&context), &[], false)),
             {
                 let region = Region::new();
@@ -1015,7 +1015,7 @@ mod tests {
                 region.append_block(block);
                 region
             },
-            &[],
+            attributes,
             location,
         ));
 
@@ -1023,6 +1023,10 @@ mod tests {
 
         assert!(module.as_operation().verify());
         insta::assert_snapshot!(module.as_operation());
+
+        let engine = crate::ExecutionEngine::new(&module, 2, &[], false);
+
+        assert_eq!(unsafe { engine.invoke_packed("kernel", &mut [],) }, Ok(()));
     }
 
     #[test]
